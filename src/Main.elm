@@ -29,6 +29,29 @@ selectFrom makeString makeMessage values defaultValue =
         )
 
 
+radioButtonsFrom : String -> (a -> String) -> (a -> Msg) -> List a -> a -> Html.Html Msg
+radioButtonsFrom groupName makeString makeMessage values defaultValue =
+    let
+        makeRadio index value =
+            let
+                elemId =
+                    groupName ++ "-" ++ toString index
+            in
+            Html.div []
+                [ Html.input
+                    [ Html.Attributes.type_ "radio"
+                    , Html.Attributes.id elemId
+                    , Html.Attributes.name groupName
+                    , Html.Attributes.checked (value == defaultValue)
+                    , Html.Events.on "change" (Json.map (\_ -> makeMessage value) Html.Events.targetValue)
+                    ]
+                    []
+                , Html.label [ Html.Attributes.for elemId ] [ Html.text (makeString value) ]
+                ]
+    in
+    Html.div [] (List.indexedMap makeRadio values)
+
+
 adjustmentToString : Adjustment -> String
 adjustmentToString adj =
     case adj of
@@ -137,8 +160,10 @@ view model =
                 , debugNotes = False
                 }
             )
-        , selectFrom toString (\mode -> SelectMode mode) modes defaultMode
-        , selectFrom toneToString (\rootTone -> SelectRootTone rootTone) rootTones defaultRootTone
+        , Html.h2 [] [ Html.text "Mode" ]
+        , radioButtonsFrom "a" toString (\mode -> SelectMode mode) modes defaultMode
+        , Html.h2 [] [ Html.text "Root" ]
+        , radioButtonsFrom "b" toneToString (\rootTone -> SelectRootTone rootTone) rootTones defaultRootTone
         , Html.div [] [ Html.text (scaleToString model.rootTone model.mode) ]
         ]
 
